@@ -164,7 +164,7 @@ def evaluate_model(
             raise ValueError(
                 "[ERROR] Please specify --mpc_horizon for MPC-based controllers."
             )
-        model = MPCController(dt=300, horizon=pred_horizon)
+        model = MPCController(dt=300, horizon=pred_horizon, reward_mode=reward_mode)
     else:
         raise ValueError(f"[ERROR] Unknown algorithm: {algorithm}")
 
@@ -205,12 +205,29 @@ def evaluate_model(
                         horizon_start : horizon_end_clipped + 1
                     ]
 
+                # Price forecast over the horizon. The index follows the price
+                # update of the environment (_update_energy_price): the reward of
+                # the action taken at step t is charged with the price at
+                # start + t + 1.
+                price_pred = None
+                price_df = getattr(eval_env.building, "full_price_df", None)
+                if price_df is not None:
+                    last_idx = len(price_df) - 1
+                    offset = eval_env.building.start + horizon_start
+                    price_pred = [
+                        float(
+                            price_df.iloc[min(offset + k, last_idx)]["price_normalized"]
+                        )
+                        for k in range(1, model.horizon + 1)
+                    ]
+
                 # Predict action
                 action, _ = model.predict(
                     obs,
                     deterministic=True,
                     T_out_pred=T_out_pred,
                     T_set_pred=T_set_pred,
+                    price_pred=price_pred,
                 )
                 # Forecast error logging
                 if len(T_out_pred) == len(T_out_true):

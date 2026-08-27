@@ -1,0 +1,180 @@
+2026-08-26 05:21:38,349 - INFO - [INFO] Evaluation Setup
+2026-08-26 05:21:38,361 - INFO - --------------------------------------------------------
+2026-08-26 05:21:38,361 - INFO - Algorithm        : Perfect MPC Control
+2026-08-26 05:21:38,361 - INFO - Reward Mode      : temperature
+2026-08-26 05:21:38,361 - INFO - Episodes         : 10
+2026-08-26 05:21:38,361 - INFO - Seed             : 58
+2026-08-26 05:21:38,361 - INFO - Model Seed       : 42
+2026-08-26 05:21:38,361 - INFO - Observation      : T01
+2026-08-26 05:21:38,361 - INFO - Prediction Hzn   : 12
+2026-08-26 05:21:38,361 - INFO - Energy Price Data: data/price_data_2025.csv
+2026-08-26 05:21:38,361 - INFO - Temperature Data : data/LLEC_outdoor_temperature_5min_data.csv
+2026-08-26 05:21:38,361 - INFO - Prefer Best      : False
+2026-08-26 05:21:38,361 - INFO - Start Time       : 2026-08-26 05:21:38
+2026-08-26 05:21:38,361 - INFO - --------------------------------------------------------
+2026-08-26 05:21:38,361 - INFO - Starting evaluation for: Perfect MPC Control (mode: temperature)
+2026-08-26 05:21:38,408 - INFO - [EnvID: 22597391938608] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 6184)
+2026-08-26 05:21:38,434 - INFO - [Episode] 0
+2026-08-26 05:21:38,437 - INFO - [EnvID: 22597391938608] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 58)
+2026-08-26 05:21:49,247 - INFO - [Episode] 1
+2026-08-26 05:21:49,252 - INFO - [EnvID: 22597391938608] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 116)
+2026-08-26 05:22:00,341 - INFO - [Episode] 2
+2026-08-26 05:22:00,346 - INFO - [EnvID: 22597391938608] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 174)
+2026-08-26 05:22:10,376 - INFO - [Episode] 3
+2026-08-26 05:22:10,380 - INFO - [EnvID: 22597391938608] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 232)
+2026-08-26 05:22:20,926 - INFO - [Episode] 4
+2026-08-26 05:22:20,929 - INFO - [EnvID: 22597391938608] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 290)
+2026-08-26 05:22:31,385 - INFO - [Episode] 5
+2026-08-26 05:22:31,389 - INFO - [EnvID: 22597391938608] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 348)
+2026-08-26 05:22:42,217 - INFO - [Episode] 6
+2026-08-26 05:22:42,221 - INFO - [EnvID: 22597391938608] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 406)
+2026-08-26 05:22:53,374 - INFO - [Episode] 7
+2026-08-26 05:22:53,378 - INFO - [EnvID: 22597391938608] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 464)
+2026-08-26 05:23:04,897 - INFO - [Episode] 8
+2026-08-26 05:23:04,901 - INFO - [EnvID: 22597391938608] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 522)
+2026-08-26 05:23:16,431 - INFO - [Episode] 9
+2026-08-26 05:23:16,435 - INFO - [EnvID: 22597391938608] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 580)
+2026-08-26 05:23:26,226 - INFO - [RESULT] Avg. reward for Perfect MPC Control (temperature): 280.51 in 107.79s
+2026-08-26 05:23:26,227 - INFO - ============================================================
+2026-08-26 05:23:27,616 - INFO - End Time        : 2026-08-26 05:23:27
+2026-08-26 05:23:27,616 - INFO - Duration        : 109.27 seconds
+2026-08-26 05:23:27,616 - INFO - CSV file saved  : results/temperature/real_temp_data/eval_T01_Perfect_MPC_Control_12.csv
+2026-08-26 05:23:27,616 - INFO - Logger file     : results/temperature/real_temp_data/eval_T01_Perfect_MPC_Control_12_log.txt
+2026-08-26 05:23:27,616 - INFO - Evaluation successfully completed.
+2026-08-26 05:23:27,618 - INFO - ============================================================
+2026-08-26 05:23:27,618 - INFO - All evaluations done.
+2026-08-26 05:23:31,310 - INFO - [INFO] Evaluation Setup
+2026-08-26 05:23:31,312 - INFO - --------------------------------------------------------
+2026-08-26 05:23:31,312 - INFO - Algorithm        : MPC Control
+2026-08-26 05:23:31,312 - INFO - Reward Mode      : temperature
+2026-08-26 05:23:31,312 - INFO - Episodes         : 10
+2026-08-26 05:23:31,312 - INFO - Seed             : 58
+2026-08-26 05:23:31,312 - INFO - Model Seed       : 42
+2026-08-26 05:23:31,312 - INFO - Observation      : T01
+2026-08-26 05:23:31,312 - INFO - Prediction Hzn   : 12
+2026-08-26 05:23:31,312 - INFO - Energy Price Data: data/price_data_2025.csv
+2026-08-26 05:23:31,314 - INFO - Temperature Data : data/LLEC_outdoor_temperature_5min_data.csv
+2026-08-26 05:23:31,314 - INFO - Prefer Best      : False
+2026-08-26 05:23:31,314 - INFO - Start Time       : 2026-08-26 05:23:31
+2026-08-26 05:23:31,314 - INFO - --------------------------------------------------------
+2026-08-26 05:23:31,314 - INFO - Starting evaluation for: MPC Control (mode: temperature)
+2026-08-26 05:23:31,346 - INFO - [EnvID: 22911922697120] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 6184)
+2026-08-26 05:23:31,370 - INFO - [Episode] 0
+2026-08-26 05:23:31,372 - INFO - [EnvID: 22911922697120] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 58)
+2026-08-26 05:23:42,937 - INFO - [Episode] 1
+2026-08-26 05:23:42,943 - INFO - [EnvID: 22911922697120] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 116)
+2026-08-26 05:23:54,545 - INFO - [Episode] 2
+2026-08-26 05:23:54,550 - INFO - [EnvID: 22911922697120] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 174)
+2026-08-26 05:24:05,269 - INFO - [Episode] 3
+2026-08-26 05:24:05,273 - INFO - [EnvID: 22911922697120] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 232)
+2026-08-26 05:24:15,781 - INFO - [Episode] 4
+2026-08-26 05:24:15,785 - INFO - [EnvID: 22911922697120] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 290)
+2026-08-26 05:24:26,688 - INFO - [Episode] 5
+2026-08-26 05:24:26,692 - INFO - [EnvID: 22911922697120] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 348)
+2026-08-26 05:24:38,203 - INFO - [Episode] 6
+2026-08-26 05:24:38,207 - INFO - [EnvID: 22911922697120] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 406)
+2026-08-26 05:24:49,888 - INFO - [Episode] 7
+2026-08-26 05:24:49,892 - INFO - [EnvID: 22911922697120] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 464)
+2026-08-26 05:25:00,195 - INFO - [Episode] 8
+2026-08-26 05:25:00,199 - INFO - [EnvID: 22911922697120] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 522)
+2026-08-26 05:25:10,380 - INFO - [Episode] 9
+2026-08-26 05:25:10,384 - INFO - [EnvID: 22911922697120] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 580)
+2026-08-26 05:25:21,968 - INFO - [RESULT] Avg. reward for MPC Control (temperature): 266.90 in 110.60s
+2026-08-26 05:25:21,969 - INFO - ============================================================
+2026-08-26 05:25:23,230 - INFO - End Time        : 2026-08-26 05:25:23
+2026-08-26 05:25:23,230 - INFO - Duration        : 111.92 seconds
+2026-08-26 05:25:23,230 - INFO - CSV file saved  : results/temperature/real_temp_data/eval_T01_MPC_Control_12.csv
+2026-08-26 05:25:23,230 - INFO - Logger file     : results/temperature/real_temp_data/eval_T01_MPC_Control_12_log.txt
+2026-08-26 05:25:23,230 - INFO - Evaluation successfully completed.
+2026-08-26 05:25:23,230 - INFO - ============================================================
+2026-08-26 05:25:23,231 - INFO - All evaluations done.
+2026-08-26 05:25:26,793 - INFO - [INFO] Evaluation Setup
+2026-08-26 05:25:26,794 - INFO - --------------------------------------------------------
+2026-08-26 05:25:26,794 - INFO - Algorithm        : Perfect MPC Control
+2026-08-26 05:25:26,794 - INFO - Reward Mode      : combined
+2026-08-26 05:25:26,795 - INFO - Episodes         : 10
+2026-08-26 05:25:26,795 - INFO - Seed             : 58
+2026-08-26 05:25:26,795 - INFO - Model Seed       : 42
+2026-08-26 05:25:26,795 - INFO - Observation      : C01
+2026-08-26 05:25:26,795 - INFO - Prediction Hzn   : 12
+2026-08-26 05:25:26,795 - INFO - Energy Price Data: data/price_data_2025.csv
+2026-08-26 05:25:26,795 - INFO - Temperature Data : data/LLEC_outdoor_temperature_5min_data.csv
+2026-08-26 05:25:26,795 - INFO - Prefer Best      : False
+2026-08-26 05:25:26,795 - INFO - Start Time       : 2026-08-26 05:25:26
+2026-08-26 05:25:26,795 - INFO - --------------------------------------------------------
+2026-08-26 05:25:26,795 - INFO - Starting evaluation for: Perfect MPC Control (mode: combined)
+2026-08-26 05:25:26,824 - INFO - [EnvID: 22540781855696] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 6184)
+2026-08-26 05:25:26,863 - INFO - [Episode] 0
+2026-08-26 05:25:26,865 - INFO - [EnvID: 22540781855696] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 58)
+2026-08-26 05:25:41,563 - INFO - [Episode] 1
+2026-08-26 05:25:41,567 - INFO - [EnvID: 22540781855696] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 116)
+2026-08-26 05:25:56,137 - INFO - [Episode] 2
+2026-08-26 05:25:56,141 - INFO - [EnvID: 22540781855696] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 174)
+2026-08-26 05:26:11,367 - INFO - [Episode] 3
+2026-08-26 05:26:11,372 - INFO - [EnvID: 22540781855696] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 232)
+2026-08-26 05:26:26,243 - INFO - [Episode] 4
+2026-08-26 05:26:26,247 - INFO - [EnvID: 22540781855696] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 290)
+2026-08-26 05:26:41,866 - INFO - [Episode] 5
+2026-08-26 05:26:41,870 - INFO - [EnvID: 22540781855696] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 348)
+2026-08-26 05:26:58,544 - INFO - [Episode] 6
+2026-08-26 05:26:58,548 - INFO - [EnvID: 22540781855696] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 406)
+2026-08-26 05:27:14,786 - INFO - [Episode] 7
+2026-08-26 05:27:14,790 - INFO - [EnvID: 22540781855696] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 464)
+2026-08-26 05:27:30,571 - INFO - [Episode] 8
+2026-08-26 05:27:30,575 - INFO - [EnvID: 22540781855696] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 522)
+2026-08-26 05:27:46,435 - INFO - [Episode] 9
+2026-08-26 05:27:46,440 - INFO - [EnvID: 22540781855696] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 580)
+2026-08-26 05:28:02,533 - INFO - [RESULT] Avg. reward for Perfect MPC Control (combined): 259.36 in 155.67s
+2026-08-26 05:28:02,533 - INFO - ============================================================
+2026-08-26 05:28:07,469 - INFO - End Time        : 2026-08-26 05:28:07
+2026-08-26 05:28:07,471 - INFO - Duration        : 160.68 seconds
+2026-08-26 05:28:07,471 - INFO - CSV file saved  : results/combined/real_temp_data/eval_C01_Perfect_MPC_Control_12.csv
+2026-08-26 05:28:07,471 - INFO - Logger file     : results/combined/real_temp_data/eval_C01_Perfect_MPC_Control_12_log.txt
+2026-08-26 05:28:07,471 - INFO - Evaluation successfully completed.
+2026-08-26 05:28:07,471 - INFO - ============================================================
+2026-08-26 05:28:07,472 - INFO - All evaluations done.
+2026-08-26 05:28:11,119 - INFO - [INFO] Evaluation Setup
+2026-08-26 05:28:11,121 - INFO - --------------------------------------------------------
+2026-08-26 05:28:11,121 - INFO - Algorithm        : MPC Control
+2026-08-26 05:28:11,121 - INFO - Reward Mode      : combined
+2026-08-26 05:28:11,121 - INFO - Episodes         : 10
+2026-08-26 05:28:11,121 - INFO - Seed             : 58
+2026-08-26 05:28:11,121 - INFO - Model Seed       : 42
+2026-08-26 05:28:11,121 - INFO - Observation      : C01
+2026-08-26 05:28:11,121 - INFO - Prediction Hzn   : 12
+2026-08-26 05:28:11,121 - INFO - Energy Price Data: data/price_data_2025.csv
+2026-08-26 05:28:11,121 - INFO - Temperature Data : data/LLEC_outdoor_temperature_5min_data.csv
+2026-08-26 05:28:11,121 - INFO - Prefer Best      : False
+2026-08-26 05:28:11,121 - INFO - Start Time       : 2026-08-26 05:28:11
+2026-08-26 05:28:11,122 - INFO - --------------------------------------------------------
+2026-08-26 05:28:11,122 - INFO - Starting evaluation for: MPC Control (mode: combined)
+2026-08-26 05:28:11,151 - INFO - [EnvID: 23033748939680] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 6184)
+2026-08-26 05:28:11,190 - INFO - [Episode] 0
+2026-08-26 05:28:11,192 - INFO - [EnvID: 23033748939680] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 58)
+2026-08-26 05:28:27,572 - INFO - [Episode] 1
+2026-08-26 05:28:27,575 - INFO - [EnvID: 23033748939680] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 116)
+2026-08-26 05:28:43,804 - INFO - [Episode] 2
+2026-08-26 05:28:43,808 - INFO - [EnvID: 23033748939680] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 174)
+2026-08-26 05:28:59,747 - INFO - [Episode] 3
+2026-08-26 05:28:59,752 - INFO - [EnvID: 23033748939680] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 232)
+2026-08-26 05:29:14,741 - INFO - [Episode] 4
+2026-08-26 05:29:14,745 - INFO - [EnvID: 23033748939680] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 290)
+2026-08-26 05:29:28,985 - INFO - [Episode] 5
+2026-08-26 05:29:28,989 - INFO - [EnvID: 23033748939680] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 348)
+2026-08-26 05:29:43,135 - INFO - [Episode] 6
+2026-08-26 05:29:43,140 - INFO - [EnvID: 23033748939680] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 406)
+2026-08-26 05:29:57,746 - INFO - [Episode] 7
+2026-08-26 05:29:57,751 - INFO - [EnvID: 23033748939680] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 464)
+2026-08-26 05:30:12,422 - INFO - [Episode] 8
+2026-08-26 05:30:12,427 - INFO - [EnvID: 23033748939680] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 522)
+2026-08-26 05:30:27,797 - INFO - [Episode] 9
+2026-08-26 05:30:27,801 - INFO - [EnvID: 23033748939680] Loading outdoor temperature profile from CSV file: 'data/LLEC_outdoor_temperature_5min_data.csv' (Seed: 580)
+2026-08-26 05:30:43,094 - INFO - [RESULT] Avg. reward for MPC Control (combined): 246.54 in 151.90s
+2026-08-26 05:30:43,095 - INFO - ============================================================
+2026-08-26 05:30:47,962 - INFO - End Time        : 2026-08-26 05:30:47
+2026-08-26 05:30:47,962 - INFO - Duration        : 156.84 seconds
+2026-08-26 05:30:47,964 - INFO - CSV file saved  : results/combined/real_temp_data/eval_C01_MPC_Control_12.csv
+2026-08-26 05:30:47,964 - INFO - Logger file     : results/combined/real_temp_data/eval_C01_MPC_Control_12_log.txt
+2026-08-26 05:30:47,964 - INFO - Evaluation successfully completed.
+2026-08-26 05:30:47,964 - INFO - ============================================================
+2026-08-26 05:30:47,964 - INFO - All evaluations done.

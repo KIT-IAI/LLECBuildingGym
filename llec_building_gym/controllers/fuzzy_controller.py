@@ -7,10 +7,26 @@ class FuzzyController:
     """
     A fuzzy controller for a dual-mode heat pump system with optional Gaussian
     membership functions and optional debug prints for traceability.
+
+    Control Law:
+    ------------
+    The temperature error e_t = T_in,t - T_set,t is mapped to the linguistic
+    categories VC, C, I, H, VH. Centroid defuzzification over the rule outputs
+    nu_i, weighted by the membership degrees mu_i(e_t), yields
+
+        a_t = clip( - sum_i mu_i(e_t) * nu_i / sum_i mu_i(e_t), -1, 1 )
+
+    The clip is required because fine_tuning scales the rule outputs by
+    output_factor = 1.5, so the raw centroid leaves the action space of the
+    environment.
+
     Dual-Mode Behavior:
     -------------------
-    - Positive fuzzy output => heating
-    - Negative fuzzy output => cooling
+    The leading minus aligns the rule outputs with the sign convention of the
+    action space, in which negative actions heat and positive actions cool:
+
+    - Positive centroid => negative action => heating
+    - Negative centroid => positive action => cooling
 
     Membership Functions:
     ---------------------
@@ -115,11 +131,11 @@ class FuzzyController:
         if error > error_max:
             if self.debug:
                 print(f"[Fuzzy] Extreme error {error:.2f} > {error_max}, max cooling.")
-            return np.array([self.fuzzy_params["VH"][3]]), None
+            return np.clip([self.fuzzy_params["VH"][3]], -1.0, 1.0), None
         elif error < error_min:
             if self.debug:
                 print(f"[Fuzzy] Extreme error {error:.2f} < {error_min}, max heating.")
-            return np.array([self.fuzzy_params["VC"][3]]), None
+            return np.clip([self.fuzzy_params["VC"][3]], -1.0, 1.0), None
 
         numerator = 0.0
         denominator = 0.0
@@ -139,4 +155,4 @@ class FuzzyController:
             print(f"  => action = {action:.2f}")
         # Return the action as negative because we interpret
         # positive membership as "cooling" in this example:
-        return -np.array([action]), None
+        return np.clip(-np.array([action]), -1.0, 1.0), None

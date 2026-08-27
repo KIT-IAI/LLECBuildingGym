@@ -2,6 +2,9 @@
 import numpy as np
 import pyomo.environ as pyo
 
+# Smoothing constant for |action| so that ipopt stays differentiable at 0
+PRICE_ABS_EPS = 1e-6
+
 
 # MPCController
 class MPCController:
@@ -26,6 +29,7 @@ class MPCController:
         reward_mode="temperature",
         temperature_weight=1.0,
         economic_weight=1.0,
+        price_max=1.0,
     ):
         """
         Initialize the MPC parameters and the optimization preferences.
@@ -41,12 +45,15 @@ class MPCController:
                 in the combined mode. Defaults to 1.0.
             economic_weight (float, optional): Weight for the economic objective
                 in the combined mode. Defaults to 1.0.
+            price_max (float, optional): Normalization constant for the price, matching
+                max_price in the environment reward. Defaults to 1.0.
         """
         self.dt = dt
         self.horizon = horizon
         self.reward_mode = reward_mode
         self.temperature_weight = temperature_weight
         self.economic_weight = economic_weight
+        self.price_max = float(price_max) if price_max else 1.0
 
         # Default building parameters if none are provided
         if building_params is None:
@@ -98,7 +105,19 @@ class MPCController:
 
         # Retrieve or default to dummy predictions
         T_out_list = kwargs.get("T_out_pred", [30.0] * (self.horizon + 1))
-        # price_list = kwargs.get("price_pred", [0.5] * self.horizon)
+
+        # Price forecast over the horizon. Without a forecast the economic term
+        # is inactive, a zero price is used instead of a fabricated default.
+        price_pred = kwargs.get("price_pred", None)
+        if price_pred is None:
+            price_list = [0.0] * H
+        else:
+            price_list = [float(p) for p in price_pred]
+            if len(price_list) < H:
+                last_value = price_list[-1] if len(price_list) > 0 else 0.0
+                price_list = price_list + [last_value] * (H - len(price_list))
+            else:
+                price_list = price_list[:H]
 
         mC = self.building_params["mC"]
         K = self.building_params["K"]
@@ -169,7 +188,23 @@ class MPCController:
             # Scale weight per time step => Horizon length does not influence the optimum
             reg_penalty = sum((0.01 / H) * m.action[i] ** 2 for i in m.t)
 
-            return temp_penalty + reg_penalty + smooth_penalty
+            if self.reward_mode != "combined":
+                return temp_penalty + reg_penalty + smooth_penalty
+
+            # Economic term, mirroring reward_economic_norm of the environment:
+            # price * |action| / max_price, both terms weighted as in the reward.
+            econ_penalty = sum(
+                price_list[i]
+                * pyo.sqrt(m.action[i] ** 2 + PRICE_ABS_EPS)
+                / self.price_max
+                for i in m.t
+            )
+            return (
+                self.temperature_weight * temp_penalty
+                + self.economic_weight * econ_penalty
+                + reg_penalty
+                + smooth_penalty
+            )
 
         model.obj = pyo.Objective(rule=objective_rule, sense=pyo.minimize)
 

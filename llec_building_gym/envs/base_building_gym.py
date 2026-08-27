@@ -651,7 +651,7 @@ class BaseBuildingGym(gym.Env):
         obs = self._get_observation()
         self.cumulative_energy_Wh = 0.0
         info = {"seed": seed}
-        if hasattr(self.building, "current_day"):
+        if getattr(self.building, "current_day", None) is not None:
             info["eval_day"] = int(self.building.current_day)
             info["start_index"] = int(self.building.start)
         return obs, info
