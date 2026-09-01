@@ -30,6 +30,8 @@ class MPCController:
         temperature_weight=1.0,
         economic_weight=1.0,
         price_max=1.0,
+        action_reg=0.0,  # 0.01 in the published evaluation runs
+        action_smoothing=0.0,  # 0.05 in the published evaluation runs
     ):
         """
         Initialize the MPC parameters and the optimization preferences.
@@ -47,6 +49,15 @@ class MPCController:
                 in the combined mode. Defaults to 1.0.
             price_max (float, optional): Normalization constant for the price, matching
                 max_price in the environment reward. Defaults to 1.0.
+            action_reg (float, optional): Weight of the optional action regularizer
+                (action_reg / horizon) * a^2. Purely numerical, not part of the
+                scored reward; it pins the weakly determined last actions of the
+                horizon. Defaults to 0.0 (plain objective); the published
+                evaluation runs used 0.01.
+            action_smoothing (float, optional): Weight of the optional smoothing
+                term action_smoothing * (a_k - a_{k-1})^2 within the horizon.
+                Purely numerical, not part of the scored reward. Defaults to 0.0
+                (plain objective); the published evaluation runs used 0.05.
         """
         self.dt = dt
         self.horizon = horizon
@@ -54,6 +65,8 @@ class MPCController:
         self.temperature_weight = temperature_weight
         self.economic_weight = economic_weight
         self.price_max = float(price_max) if price_max else 1.0
+        self.action_reg = float(action_reg)
+        self.action_smoothing = float(action_smoothing)
 
         # Default building parameters if none are provided
         if building_params is None:
@@ -179,14 +192,17 @@ class MPCController:
         def objective_rule(m):
             """
             Objective function that can be temperature-only or combined with
-            an economic term, depending on self.reward_mode.
+            an economic term, depending on self.reward_mode. The two
+            regularizers are optional numerical smoothers (zero weight
+            disables them) and not part of the scored reward.
             """
             temp_penalty = sum((m.T_in[i] - T_set_list[i]) ** 2 for i in m.t)
             smooth_penalty = sum(
-                0.05 * (m.action[i] - m.action[i - 1]) ** 2 for i in range(1, H)
+                self.action_smoothing * (m.action[i] - m.action[i - 1]) ** 2
+                for i in range(1, H)
             )
             # Scale weight per time step => Horizon length does not influence the optimum
-            reg_penalty = sum((0.01 / H) * m.action[i] ** 2 for i in m.t)
+            reg_penalty = sum((self.action_reg / H) * m.action[i] ** 2 for i in m.t)
 
             if self.reward_mode != "combined":
                 return temp_penalty + reg_penalty + smooth_penalty

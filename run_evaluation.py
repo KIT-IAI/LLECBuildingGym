@@ -155,10 +155,10 @@ def evaluate_model(
     elif algorithm == "Fuzzy Control":
         model = FuzzyController(
             debug=False, use_gaussian=True, sigma=1.0, fine_tuning=True
-        )  # gaussian membership 1: 225.69 in 0.96s
-        # model = FuzzyController(debug=False, use_gaussian=False, sigma=1.0, fine_tuning=False)# triangle membership 2: 152.54 in 1.00s
-        # model = FuzzyController(debug=False, use_gaussian=True,  sigma=1.0, fine_tuning=False)# gaussian membership 3: 147.83 in 0.95s
-        # model = FuzzyController(debug=False, use_gaussian=False, sigma=1.0, fine_tuning=True) # triangle membership 4: 51.47 in 1.06s
+        )  # gaussian membership 1: 224.13 in 0.97s
+        # model = FuzzyController(debug=False, use_gaussian=False, sigma=1.0, fine_tuning=False)# triangle membership 2: 152.54 in 1.16s
+        # model = FuzzyController(debug=False, use_gaussian=True,  sigma=1.0, fine_tuning=False)# gaussian membership 3: 147.83 in 1.16s
+        #model = FuzzyController(debug=False, use_gaussian=False, sigma=1.0, fine_tuning=True) # triangle membership 4: 50.53 in 1.08s
     elif algorithm in ["MPC Control", "Perfect MPC Control"]:
         if pred_horizon is None:
             raise ValueError(
@@ -503,7 +503,7 @@ if __name__ == "__main__":
     =======================
     python run_evaluation.py --algorithms "PI Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"           # 251.98 in 0.99s
     python run_evaluation.py --algorithms "PID Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"          # 251.98 in 0.88s
-    python run_evaluation.py --algorithms "Fuzzy Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"        # 225.69 in 1.07s
+    python run_evaluation.py --algorithms "Fuzzy Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"        # 224.13 in 0.97s
     python run_evaluation.py --algorithms "Perfect MPC Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"  # 280.51 in 396.77s
     python run_evaluation.py --algorithms "MPC Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"          # 266.90 in 396.20s
     python run_evaluation.py --algorithms ppo --reward_mode temperature --obs_variant T01 --prefer_best --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"      # 263.62 in 2.09s
@@ -516,5 +516,5 @@ if __name__ == "__main__":
     python run_evaluation.py --algorithms ppo --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv" --model_seed 18  # 268.01 in 2.12s
     python run_evaluation.py --algorithms "PI Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"         # 251.98 in 0.90s
     python run_evaluation.py --algorithms "PID Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"        # 251.98 in 0.88s
-    python run_evaluation.py --algorithms "Fuzzy Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"      # 225.69 in 0.93s
+    python run_evaluation.py --algorithms "Fuzzy Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"      # 224.13 in 0.97s
     """
