@@ -190,8 +190,8 @@ class Building:
         # Energy price preparation, if path given
         if self.energy_price_path is not None:
             self._load_energy_price()
-        # Select start index depending on training or test mode
-        steps_per_day = int(23 * 3600 // self.timestep)
+        # Select start index (starts at 00:00) depending on training or test mode
+        steps_per_day = int(24 * 3600 // self.timestep)
         if self.energy_price_path is not None:
             if self.training:
                 day = self._rng.choice(self.train_days)
@@ -412,7 +412,8 @@ class Building:
         # Keep entire DataFrame
         self.full_price_df = price_df
 
-        steps_per_day = int(23 * 3600 // self.timestep)
+        # 288 at 5-min steps, day d starts at 00:00
+        steps_per_day = int(24 * 3600 // self.timestep)  
         total_days = len(price_df) // steps_per_day
 
         # Generate a reproducible random split of days
@@ -581,9 +582,13 @@ class BaseBuildingGym(gym.Env):
             raise ValueError("cop_heat and cop_cool must be positive.")
 
         self.obs_variant = kwargs.get("obs_variant", "T01")  # move up
-        self.prediction_horizon = (
-            12 * 5 * 6
-        )  # Number of steps to look ahead for forecasted values
+        # Forecast horizon of observation #5 in control steps (12 = 1 h at 5-min steps).
+        self.prediction_horizon = int(kwargs.get("prediction_horizon", 12))
+        # Noise model of the price forecast in observation #5 (see _get_future_energy_prices);
+        # defaults = published behaviour (constant N(0, 0.01) on every element)
+        self.price_noise_sigma = float(kwargs.get("price_noise_sigma", 0.01))
+        self.price_noise_growth = kwargs.get("price_noise_growth", None) or None
+        self.price_noise_ref_step = int(kwargs.get("price_noise_ref_step", 12))
 
         # Instantiate the building model
         self.building = Building(
@@ -780,10 +785,27 @@ class BaseBuildingGym(gym.Env):
         using a default time-of-use pricing scheme. A small Gaussian noise is added
         to each price to simulate realistic prediction uncertainty.
 
+        Noise model (constructor kwargs, defaults reproduce the published behaviour):
+            price_noise_sigma   sigma of the Gaussian noise at the reference lead time
+                                (default 0.01, i.e. N(0, 0.01) on every element)
+            price_noise_growth  None      constant sigma for every element (default)
+                                "sqrt"    sigma_i = sigma * sqrt(i / ref_step), independent draws
+                                "linear"  sigma_i = sigma * i / ref_step, independent draws
+                                "rw"      random walk along the horizon, eps_i = eps_{i-1} + eta_i with
+                                          eta_i ~ N(0, sigma^2 / ref_step), i.e. the AR error model of
+                                          Oldewurtel et al. (2012) with F = I; marginal sigma as "sqrt"
+            price_noise_ref_step lead time in steps at which sigma_i = sigma (default 12 = 1 h)
+        Every element consumes exactly one draw of building._rng in horizon order, so the default
+        (constant sigma) is bit-identical to the previous implementation.
+
         Returns:
             List[float]: Forecasted energy prices for upcoming steps, clipped to [0.0, 1.0].
         """
         future_prices = []
+        sigma = float(getattr(self, "price_noise_sigma", 0.01))
+        growth = getattr(self, "price_noise_growth", None) or None
+        ref_step = float(getattr(self, "price_noise_ref_step", 12))
+        rw_eps = 0.0
         for i in range(1, self.prediction_horizon + 1):
             future_idx = self.building.iteration + i
             if self.building.energy_price_path is not None:
@@ -807,8 +829,19 @@ class BaseBuildingGym(gym.Env):
                     future_price = 0.50
                 else:
                     future_price = 0.75
-            # Add small Gaussian noise to future prices for realism
-            noisy_price = future_price + self.building._rng.normal(0, 0.01)
+            # Add Gaussian noise to future prices (see docstring for the noise models)
+            if growth is None:
+                eps = self.building._rng.normal(0, sigma)
+            elif growth == "sqrt":
+                eps = self.building._rng.normal(0, sigma * np.sqrt(i / ref_step))
+            elif growth == "linear":
+                eps = self.building._rng.normal(0, sigma * i / ref_step)
+            elif growth == "rw":
+                rw_eps += self.building._rng.normal(0, sigma / np.sqrt(ref_step))
+                eps = rw_eps
+            else:
+                raise ValueError("unknown price_noise_growth: %r" % (growth,))
+            noisy_price = future_price + eps
             noisy_price = np.clip(noisy_price, 0.0, 1.0)
             future_prices.append(noisy_price)
         return future_prices
