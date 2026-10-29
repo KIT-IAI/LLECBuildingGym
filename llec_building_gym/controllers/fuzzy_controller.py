@@ -128,14 +128,19 @@ class FuzzyController:
         error_max = 15
         error_min = -5
 
+        # Both saturation branches apply the same sign inversion as the regular
+        # centroid path below (return -output), so the action is continuous at
+        # error_max / error_min. Before 2026-10-29 the raw rule output was
+        # returned here, which reversed the action beyond the thresholds and
+        # let the controller run away in long episodes without daily reset.
         if error > error_max:
             if self.debug:
-                print(f"[Fuzzy] Extreme error {error:.2f} > {error_max}, max cooling.")
-            return np.clip([self.fuzzy_params["VH"][3]], -1.0, 1.0), None
+                print(f"[Fuzzy] Extreme error {error:.2f} > {error_max}, saturated VH rule.")
+            return np.clip([-self.fuzzy_params["VH"][3]], -1.0, 1.0), None
         elif error < error_min:
             if self.debug:
-                print(f"[Fuzzy] Extreme error {error:.2f} < {error_min}, max heating.")
-            return np.clip([self.fuzzy_params["VC"][3]], -1.0, 1.0), None
+                print(f"[Fuzzy] Extreme error {error:.2f} < {error_min}, saturated VC rule.")
+            return np.clip([-self.fuzzy_params["VC"][3]], -1.0, 1.0), None
 
         numerator = 0.0
         denominator = 0.0
