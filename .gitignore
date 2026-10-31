@@ -44,4 +44,3 @@ models/temperature/T01/ppo_model_seed18.zip
 # runtime leftovers and local helpers
 log
 nohup.out
-mpc_price_forecast.py

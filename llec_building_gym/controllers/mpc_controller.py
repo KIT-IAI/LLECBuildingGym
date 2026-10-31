@@ -1,9 +1,31 @@
 # File: llec_building_gym/controllers/mpc_controller.py
+import os
+import shutil
+
 import numpy as np
 import pyomo.environ as pyo
 
 # Smoothing constant for |action| so that ipopt stays differentiable at 0
 PRICE_ABS_EPS = 1e-6
+
+# Fallback path of the Ipopt binary (HAICORE account ii6824). Resolution order in
+# resolve_ipopt_executable(): IPOPT_EXECUTABLE env var -> `ipopt` on PATH -> this path.
+IPOPT_FALLBACK_PATH = "/home/iai/ii6824/.local/bin/ipopt"
+
+
+def resolve_ipopt_executable():
+    """
+    Locate the Ipopt binary in a portable way.
+
+    Order: environment variable IPOPT_EXECUTABLE (explicit override, e.g. on
+    Windows), then an `ipopt` found on the PATH (e.g. ~/.local/bin/ipopt on
+    bwUniCluster), then the historical HAICORE path as fallback.
+    """
+    return (
+        os.environ.get("IPOPT_EXECUTABLE")
+        or shutil.which("ipopt")
+        or IPOPT_FALLBACK_PATH
+    )
 
 
 # MPCController
@@ -224,10 +246,8 @@ class MPCController:
 
         model.obj = pyo.Objective(rule=objective_rule, sense=pyo.minimize)
 
-        # Solve the optimization model
-        solver = pyo.SolverFactory(
-            "ipopt", executable="/home/iai/ii6824/.local/bin/ipopt"
-        )
+        # Solve the optimization model (Ipopt located via env var / PATH / fallback)
+        solver = pyo.SolverFactory("ipopt", executable=resolve_ipopt_executable())
         solver.solve(model, tee=False)
 
         # Extract the first optimal action

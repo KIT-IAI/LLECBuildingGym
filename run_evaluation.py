@@ -20,6 +20,69 @@ from llec_building_gym import (
 )
 import logging
 
+# MPC price forecast over the prediction horizon (formerly mpc_price_forecast.py).
+# "MPC Control" sees the prices under the same Gaussian noise as the RL agents in
+# observation #5 (BaseBuildingGym._get_future_energy_prices): N(0, sigma) per
+# element, clipped to [0, 1]. The index follows the price update of the
+# environment: the reward of the action taken at step t is charged with the
+# price at start + t + 1. A private generator per episode keeps the environment
+# stream building._rng (temperature noise, RL price noise) unchanged.
+# "Perfect MPC Control" uses sigma = 0, i.e. the realized prices.
+RL_PRICE_NOISE_SIGMA = 0.01  # sigma of RL observation #5
+GROWTH_REF_STEP = 12  # lead time at which sigma_k = sigma (12 steps = 1 h)
+
+
+def price_noise_rng(seed, sigma):
+    """Private generator for the MPC price noise of one episode; None without noise."""
+    if not sigma or sigma <= 0.0:
+        return None
+    return np.random.default_rng([int(seed), 1])
+
+
+def noise_sigma_per_step(horizon, sigma, growth=None, ref_step=GROWTH_REF_STEP):
+    """Sigma per forecast element k = 1..horizon.
+
+    growth None    : constant sigma (law of RL observation #5)
+    growth "sqrt"  : sigma * sqrt(k / ref_step), random-walk-like growing forecast
+                     error (error variance linear in the lead time, as in Oldewurtel
+                     et al. 2012 for weather forecasts in stochastic building MPC);
+                     equal to the RL value at k = ref_step
+    growth "linear": sigma * k / ref_step
+    growth "rw"    : marginal spread as "sqrt", but drawn as a random walk along the
+                     horizon (see mpc_price_forecast); only the spread is returned here
+    """
+    k = np.arange(1, int(horizon) + 1, dtype=float)
+    if growth in (None, "", "const", "constant"):
+        return np.full(k.shape, float(sigma))
+    if growth in ("sqrt", "rw"):
+        return float(sigma) * np.sqrt(k / float(ref_step))
+    if growth == "linear":
+        return float(sigma) * k / float(ref_step)
+    raise ValueError("unknown price_noise_growth: %r" % (growth,))
+
+
+def mpc_price_forecast(building, horizon, rng=None, sigma=0.0, growth=None, ref_step=GROWTH_REF_STEP):
+    """Price vector of length horizon for MPCController.predict(price_pred=...); None without price data."""
+    price_df = getattr(building, "full_price_df", None)
+    if price_df is None:
+        return None
+    prices = price_df["price_normalized"].to_numpy(dtype=float)
+    last = len(prices) - 1
+    offset = int(building.start) + int(building.iteration)
+    idx = np.minimum(offset + np.arange(1, int(horizon) + 1), last)
+    pred = prices[idx].copy()
+    if rng is not None and sigma and sigma > 0.0:
+        if growth == "rw":
+            # Random walk along the horizon (AR error model of Oldewurtel et al. 2012 with F = I):
+            # eps_k = eps_{k-1} + eta_k, eta_k ~ N(0, sigma^2 / ref_step), marginal spread as "sqrt"
+            eps = np.cumsum(rng.normal(0.0, float(sigma) / np.sqrt(float(ref_step)), size=pred.shape))
+        else:
+            sig = noise_sigma_per_step(horizon, sigma, growth, ref_step)
+            eps = rng.normal(0.0, 1.0, size=pred.shape) * sig
+        pred = np.clip(pred + eps, 0.0, 1.0)
+    return [float(p) for p in pred]
+
+
 # Logging configuration
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -87,10 +150,16 @@ def evaluate_model(
     obs_variant=None,
     prefer_best=True,
     model_seed=42,
+    mpc_price_noise=RL_PRICE_NOISE_SIGMA,
 ):
     """
     Evaluate a reinforcement learning model or a custom controller
     within the BaseBuildingGym environment.
+
+    "MPC Control" plans with the price forecast under the same Gaussian noise
+    as the RL agents in observation #5 (mpc_price_noise, default
+    RL_PRICE_NOISE_SIGMA = 0.01 since 2026-10-12; 0 = exact prices as before),
+    "Perfect MPC Control" always plans with the realized prices.
 
     Args:
         algorithm (str): Identifier for the RL model or controller to evaluate.
@@ -178,6 +247,11 @@ def evaluate_model(
     for ep in range(episodes):
         logger.info(f"[Episode] {ep}")
         obs, seed_info = eval_env.reset(seed=env_seed + ep * 58)
+        rng_price = (
+            price_noise_rng(env_seed + ep * 58, mpc_price_noise)
+            if algorithm == "MPC Control"
+            else None
+        )
         done = False
         episode_rewards = []
         time_step = 0
@@ -205,21 +279,19 @@ def evaluate_model(
                         horizon_start : horizon_end_clipped + 1
                     ]
 
-                # Price forecast over the horizon. The index follows the price
-                # update of the environment (_update_energy_price): the reward of
-                # the action taken at step t is charged with the price at
-                # start + t + 1.
-                price_pred = None
-                price_df = getattr(eval_env.building, "full_price_df", None)
-                if price_df is not None:
-                    last_idx = len(price_df) - 1
-                    offset = eval_env.building.start + horizon_start
-                    price_pred = [
-                        float(
-                            price_df.iloc[min(offset + k, last_idx)]["price_normalized"]
-                        )
-                        for k in range(1, model.horizon + 1)
-                    ]
+                # Price forecast over the horizon (mpc_price_forecast above). The index
+                # follows the price update of the environment
+                # (_update_energy_price): the reward of the action taken at step
+                # t is charged with the price at start + t + 1. "MPC Control"
+                # sees the forecast under the RL observation noise (sigma =
+                # mpc_price_noise, private generator per episode), "Perfect MPC
+                # Control" the realized prices.
+                price_pred = mpc_price_forecast(
+                    eval_env.building,
+                    model.horizon,
+                    rng=rng_price,
+                    sigma=mpc_price_noise if algorithm == "MPC Control" else 0.0,
+                )
 
                 # Predict action
                 action, _ = model.predict(
@@ -420,6 +492,16 @@ def main():
         action="store_true",
         help="Prefer loading best_model.zip if available.",
     )
+    parser.add_argument(
+        "--mpc_price_noise",
+        type=float,
+        default=RL_PRICE_NOISE_SIGMA,
+        help=(
+            'Sigma of the Gaussian noise on the price forecast of "MPC Control" '
+            "(default 0.01 = RL observation #5, since 2026-10-12; 0 = exact prices). "
+            '"Perfect MPC Control" always uses the realized prices.'
+        ),
+    )
     args = parser.parse_args()
 
     results_dir = os.path.join("results", args.reward_mode)
@@ -475,6 +557,7 @@ def main():
             obs_variant=args.obs_variant,
             prefer_best=args.prefer_best,
             model_seed=args.model_seed,
+            mpc_price_noise=args.mpc_price_noise,
         )
         df.to_csv(csv_path, index=False)
         end = datetime.now()
@@ -501,20 +584,20 @@ if __name__ == "__main__":
     =======================
     1. Evaluate Controller (temperature only)
     =======================
-    python run_evaluation.py --algorithms "PI Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"           # 251.98 in 0.99s
-    python run_evaluation.py --algorithms "PID Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"          # 251.98 in 0.88s
-    python run_evaluation.py --algorithms "Fuzzy Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"        # 224.13 in 0.97s
-    python run_evaluation.py --algorithms "Perfect MPC Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"  # 280.51 in 396.77s
-    python run_evaluation.py --algorithms "MPC Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"          # 266.90 in 396.20s
-    python run_evaluation.py --algorithms ppo --reward_mode temperature --obs_variant T01 --prefer_best --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"      # 263.62 in 2.09s
-    python run_evaluation.py --algorithms sac --reward_mode temperature --obs_variant T01 --prefer_best --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"      # 262.32 in 3.05s
+    python run_evaluation.py --algorithms "PI Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"           # 262.26 in 0.48s
+    python run_evaluation.py --algorithms "PID Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"          # 262.26 in 0.48s
+    python run_evaluation.py --algorithms "Fuzzy Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"        # 225.47 in 0.51s
+    python run_evaluation.py --algorithms "Perfect MPC Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"  # 282.30 in 143.83s
+    python run_evaluation.py --algorithms "MPC Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"          # 268.90 in 202.93s
+    python run_evaluation.py --algorithms ppo --reward_mode temperature --obs_variant T01 --prefer_best --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"      # 264.84 in 1.08s
+    python run_evaluation.py --algorithms sac --reward_mode temperature --obs_variant T01 --prefer_best --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"      # 264.30 in 1.29s
     """
 
     """
     RL Workshop
     =======================
-    python run_evaluation.py --algorithms ppo --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv" --model_seed 18  # 268.01 in 2.12s
-    python run_evaluation.py --algorithms "PI Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"         # 251.98 in 0.90s
-    python run_evaluation.py --algorithms "PID Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"        # 251.98 in 0.88s
-    python run_evaluation.py --algorithms "Fuzzy Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"      # 224.13 in 0.97s
+    python run_evaluation.py --algorithms ppo --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv" --model_seed 18  # 269.39 in 1.25s
+    python run_evaluation.py --algorithms "PI Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"         # 262.26 in 0.48s
+    python run_evaluation.py --algorithms "PID Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"        # 262.26 in 0.48s
+    python run_evaluation.py --algorithms "Fuzzy Control" --reward_mode temperature --obs_variant T01 --outdoor_temperature_path "data/LLEC_outdoor_temperature_5min_data.csv"      # 225.47 in 0.51s
     """
